@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <!--Se definen los estilos de del formulario y la lista-->
+    <link rel="stylesheet" href="index.css" />
+    <title>Formulario de Recetas</title>
+  </head>
+
+  <body>
+    <div id="raiz" />
+
+    <!--Se definen las librerias de REact y React DOM-->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+
+    <script>
+      const root = ReactDOM.createRoot(document.getElementById("raiz"));
+
+      //Se definen las variables necesarias para el fomrulario y listado de recetas
+      let recetasTotales = 0;
+      let arrayNombresRecetas = [];
+      let arrayIngredientesRecetas = [];
+
+      //Función utilizada para renderizar la lista de Recetas con sus Ingredientes.
+      const renderLista = (array) => {
+        const lista = React.createElement(
+          "div",
+          null,
+          array.map((arreglo) => {
+            const ingredientesReceta = arreglo.ingredientes
+              ? arreglo.ingredientes
+              : [];
+            return React.createElement("div", null, [
+              React.createElement(
+                "h2",
+                { key: "nombrerec" + arreglo.id, style: { color: "green" } },
+                "Nombre de Receta: " + arreglo.nombrereceta
+              ),
+              React.createElement(
+                "h3",
+                { key: "tiemporec" + arreglo.id, style: { color: "blue" } },
+                "Tiempo de Preparación: " + arreglo.tiemporeceta
+              ),
+              React.createElement(
+                "img",
+                {
+                  key: "imagenrec" + arreglo.id,
+                  width: "200px",
+                  height: "150px",
+                  src: arreglo.imagenreceta
+                },
+                null
+              ),
+              React.createElement(
+                "h4",
+                {
+                  key: "ingredientesrec" + arreglo.id,
+                  style: { color: "red" }
+                },
+                "Ingredientes: "
+              ),
+              React.createElement(
+                "ul",
+                null,
+                ingredientesReceta.map((ingredientesReceta) => {
+                  return React.createElement(
+                    "li",
+                    { key: ingredientesReceta.id },
+                    ingredientesReceta.nombreingrediente
+                  );
+                })
+              )
+            ]);
+          })
+        );
+        root.render([form, section, lista]);
+      };
+
+      //Funcion ejecutada cuando se presiona el botón de Registrar Receta
+      const submit = (event) => {
+        event.preventDefault();
+        let urlImagenReceta = "";
+        if (
+          event.target.nombrereceta.value.trim() != "" &&
+          event.target.tiempopreparacion.value.trim() != "" &&
+          event.target.imgreceta.value.trim() != ""
+        ) {
+          const fileImagen = document.getElementById("imgreceta");
+          const fr = new FileReader();
+          fr.readAsDataURL(fileImagen.files[0]);
+          setTimeout(() => {
+            console.log("World!");
+            urlImagenReceta = fr.result;
+            arrayNombresRecetas.push({
+              id: event.target.nombrereceta.value,
+              nombrereceta: event.target.nombrereceta.value,
+              tiemporeceta: event.target.tiempopreparacion.value,
+              imagenreceta: urlImagenReceta,
+              ingredientes: arrayIngredientesRecetas
+            });
+            recetasTotales++;
+            renderLista(arrayNombresRecetas);
+            document.getElementById("ingrediente").disabled = false;
+            document.getElementById("btnagregarIngrediente").disabled = false;
+            document.getElementById("nombrereceta").disabled = true;
+            document.getElementById("tiempopreparacion").disabled = true;
+            document.getElementById("imgreceta").disabled = true;
+            document.getElementById("agregarreceta").disabled = true;
+            document.getElementById("reiniciarValores").disabled = true;
+            document.getElementById("imgreceta").value = "";
+          }, 1000);
+        } else if (
+          event.target.nombrereceta.value.trim() === "" &&
+          event.target.tiempopreparacion.value.trim() === "" &&
+          event.target.imgreceta.value.trim() === ""
+        ) {
+          alert(
+            "Te pedimos capturar el nombre de la receta y el tiempo de preparación y seleccionar la imagen de receta."
+          );
+          event.target.nombrereceta.focus();
+        } else if (event.target.nombrereceta.value.trim() === "") {
+          alert("Te pedimos capturar el nombre de la receta.");
+          event.target.nombrereceta.focus();
+        } else if (event.target.tiempopreparacion.value.trim() === "") {
+          alert("Te pedimos capturar el tiempo de preparación.");
+          event.target.tiempopreparacion.focus();
+        } else if (event.target.imgreceta.value.trim() === "") {
+          alert("Te pedimos seleccionar la imagen de la receta.");
+          event.target.imgreceta.focus();
+        }
+      };
+
+      // Función para agregar un nuevo ingrediente a la receta actual registrada
+      const agregarIngrediente = (event) => {
+        if (event.value.trim() != "") {
+          arrayIngredientesRecetas.push({
+            id: recetasTotales + "_" + event.value,
+            nombreingrediente: event.value
+          });
+          document.getElementById("ingrediente").value = "";
+          document.getElementById("ingrediente").focus();
+          document.getElementById("reiniciarValores").disabled = false;
+          renderLista(arrayNombresRecetas);
+        } else {
+          alert("Favor de capturar el ingrediente de la receta registrada.");
+        }
+      };
+
+      // Función para reiniciar los valores de ingredientes y receta para dar de alta una nueva receta
+      const reiniciarValoresIngredientes = () => {
+        document.getElementById("nombrereceta").value = "";
+        document.getElementById("tiempopreparacion").value = "";
+        document.getElementById("imgreceta").value = "";
+        document.getElementById("ingrediente").value = "";
+        document.getElementById("ingrediente").disabled = true;
+        document.getElementById("btnagregarIngrediente").disabled = true;
+        document.getElementById("nombrereceta").disabled = false;
+        document.getElementById("tiempopreparacion").disabled = false;
+        document.getElementById("imgreceta").disabled = false;
+        document.getElementById("agregarreceta").disabled = false;
+        document.getElementById("btnagregarIngrediente").disabled = true;
+        arrayIngredientesRecetas = [];
+      };
+
+      //Se define el formulario para capturar los datos de nombre de la receta, timepo de preparación e imagen.
+      const form = React.createElement("form", { onSubmit: submit }, [
+        React.createElement(
+          "button",
+          {
+            type: "button",
+            id: "reiniciarValores",
+            onClick: reiniciarValoresIngredientes
+          },
+          "Nueva Receta"
+        ),
+        React.createElement("input", {
+          type: "text",
+          id: "nombrereceta",
+          name: "nombrereceta",
+          placeholder: "Nombre de Receta",
+          disabled: true
+        }),
+        React.createElement("input", {
+          type: "text",
+          id: "tiempopreparacion",
+          name: "tiempopreparacion",
+          placeholder: "Tiempo de preparación",
+          disabled: true
+        }),
+        React.createElement("input", {
+          type: "file",
+          id: "imgreceta",
+          accept: "image/png, image/jpeg",
+          disabled: true
+        }),
+        React.createElement(
+          "button",
+          {
+            type: "submit",
+            id: "agregarreceta",
+            name: "agregarreceta",
+            disabled: true
+          },
+          "Registrar Receta"
+        )
+      ]);
+      // Se genera formulario para capturar los ingredientes de la receta.
+      const section = React.createElement("form", null, [
+        React.createElement("div", null, ""),
+        React.createElement("input", {
+          type: "text",
+          id: "ingrediente",
+          name: "ingrediente",
+          placeholder: "Agregar ingredientes de la receta",
+          disabled: true
+        }),
+        React.createElement(
+          "button",
+          {
+            type: "button",
+            id: "btnagregarIngrediente",
+            onClick: () => agregarIngrediente(this.ingrediente)
+          },
+          "Registrar Ingrediente"
+        )
+      ]);
+
+      //Se renderean los formularios de la receta y de los ingredientes.
+      root.render([form, section]);
+    </script>
+  </body>
+</html>
